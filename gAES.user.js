@@ -14,7 +14,7 @@
  * Nicolas Turlais
  * 2013
  * MIT Licence 
- * https://github.com/nicolas-t
+ * https://github.com/nicolas-t/gAES
 
  * uses jQuery 
  *   http://jquery.com/
