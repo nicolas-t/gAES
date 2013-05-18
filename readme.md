@@ -1,19 +1,19 @@
 ##gAES
------------
 gAES is a (greasemonkey) user script that encrypts/decrypts (AES) your google chats with one or more contacts
+-----------
 
 
 ##Installation
-**Both you and the contact you want to chat with have to do this.**  
+**Both you and the contact you want to chat with have to install gAES.**  
 After installing GreaseMonkey, click here :  
-http://link.to/gAES.user.js  
-greaseMonkey will suggest you to install the script, do it.  
+https://github.com/nicolas-t/gAES/blob/master/gAES.user.js  
+GreaseMonkey will suggest you to install the script, do it.  
 
 
 ##Configuration
-**Both you and the contact you want to chat with have to do this.**  
+**Both you and the contact you want to chat with have to configure gAES.**  
 After installing gAES, it's time to configure it.    
- Click on the GreaseMonkey icon> Manage User Scripts > gAES options > Edit this User Script 
+Click on : the GreaseMonkey icon> Manage User Scripts > gAES options > Edit this User Script 
   
 let's take an exemple:  
 I'm `Walker Evans` (on gmail) and I want to chat securely with `August Sander` (on gmail)  
@@ -35,8 +35,8 @@ Save, refresh the gmail tab, et voilà !
 
 
 ##Usage  
-gAES encrypts your message on the fly, then decrypts all messages in the chatbox, every seconds (you can configure it)  
-when reading chat history gAES adds a decrypt button to decrypt the encrypted conversation (yes)
+gAES encrypts your message on the fly, then decrypts all messages in the chatbox, every seconds (you can configure it).  
+When reading chat history gAES adds a decrypt button to decrypt the encrypted conversation (yes). 
 
 ## Dependencies
 GreaseMonkey, or a firefox plugin to use userscripts    
