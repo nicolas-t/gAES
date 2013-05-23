@@ -24,6 +24,11 @@
  *   https://github.com/mdp/gibberish-aes 
  */
 
+/* don't run the script on iframes */
+if (window.top != window.self){
+    return;
+}
+
 jQuery(window).load(function(){
 
     /*-----    GLOBALS         ------------------------------------------------------------------------------*/
