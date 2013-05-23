@@ -1,16 +1,19 @@
 gAES
 ================================
 
-gAES is a (greasemonkey) user script that encrypts/decrypts (AES) your google chats with one or more contacts
+gAES is a (greasemonkey) user script that encrypts/decrypts (AES) your google chats with one or more contacts  
+Install `gAES.user.js` to encrypt/decrypt your conversations on gTalk 
+Install `hangoutAES.user.js` to encrypt/decrypt your conversations with google Hangouts (gmail, g+,...)
 
 ---
 
 ##Installation
 
 
-*Both you and the contact you want to chat with have to install gAES.*  
-After installing GreaseMonkey, click here :  
-https://github.com/nicolas-t/gAES/raw/master/gAES.user.js  
+*Both you and the contact you want to chat with have to install gAES/hangoutAES.*  
+After installing GreaseMonkey,
+- If you use gTalk (or if you want to decrypt your gmail chat history) click here : [gAES](https://github.com/nicolas-t/gAES/raw/master/gAES.user.js)     
+- If you use google Hangouts click here : [hangoutAES](https://github.com/nicolas-t/gAES/raw/master/hangoutAES.user.js)   
 GreaseMonkey will suggest you to install the script, do it.  
 
 
@@ -18,7 +21,7 @@ GreaseMonkey will suggest you to install the script, do it.
 
 
 *Both you and the contact you want to chat with have to configure gAES.*  
-After installing gAES, it's time to configure it.    
+After installing gAES/hangoutAES, it's time to configure it.    
 Click on : the `GreaseMonkey icon`> `Manage User Scripts` > `gAES options` > `Edit this User Script` 
   
 let's take an exemple:  
@@ -45,8 +48,9 @@ Save, refresh the gmail tab, et voilà !
 ##Usage
 
 
-gAES encrypts your message on the fly, then decrypts all messages in the chatbox, every seconds (you can configure it).  
-When reading chat history gAES adds a decrypt button to decrypt the encrypted conversation (yes). 
+gAES/hangoutAES encrypts your message on the fly, then decrypts all messages in the chatbox, every seconds (you can configure it).  
+When reading chat history gAES adds a decrypt button to decrypt the encrypted conversation (yes).   
+For the moment, if you use hangoutAES and wants to decrypt your chat history also install (and configure) gAES.   
 
 ## Dependencies
 
