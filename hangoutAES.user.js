@@ -1,16 +1,14 @@
 // ==UserScript==
-// @name        hangoutAES
-// @description Encrypting your Google Hangouts.
-// @namespace   hangoutAES
+// @name        HangoutAES
+// @description Enrypting your Google Hangouts.
+// @namespace   HangoutAES
 // @include     https://talkgadget.google.com/*
+// @include     https://mail.google.com/mail/*
 // @require     http://code.jquery.com/jquery-1.9.1.min.js
 // @require     https://raw.github.com/mdp/gibberish-aes/master/dist/gibberish-aes-1.0.0.js
 // @grant       none
 // @version     1
 // ==/UserScript==
-
-/* Beta version of hangoutAES, also install gAES if you want to decrypt your chat history   */
-/* I'll merge the chat history decryption to hangoutAES when gTalk will definitly disappear */
 
 /**
  * Nicolas Turlais
@@ -26,9 +24,13 @@
  *   https://github.com/mdp/gibberish-aes 
  */
 
-/*only run in chat frames*/
-if(window.location.hash.substring(0,6) !== '#egtn_'){
-	return;
+/* hangout : only run in chat frames */
+if( (window.location.host == 'talkgadget.google.com' && window.location.hash.substring(0,6) != '#egtn_') ){
+    return;
+}
+/* gmail : only run in top window */
+if( (window.location.host == 'mail.google.com' && window.top != window.self) ){
+    return;
 }
 
 jQuery(window).load(function(){
@@ -55,9 +57,10 @@ jQuery(window).load(function(){
                         passphrase : 'another-strong-passphrase'
                     }];
     -*/
+
     var whiteList = [{
-                        user       : 'Firstname Surname', /* edit here */
-                        passphrase : 'abcDEF-123456'      /* edit here */
+                        user : 'Firstname Surname', /* edit here */
+                        passphrase : 'abcDEF-123456' /* edit here */
                     }];
 
     /*-------------------------------------------------------------------------------------------------------*/
@@ -71,124 +74,189 @@ jQuery(window).load(function(){
 
     /*-----    CHAT EVENTS      ----------------------------------------------------------------------------*/
 
-    /*------------------------------------------------------------------------------------------------------*/
-    /* When the "Enter" key is pressed, if the user is whitelisted...                                       */
-    /* Instead of sending the message we encrypt it...                                                      */
-    /* Then we submit it encrypted surrounded by the two matchers.                                          */
-    /*------------------------------------------------------------------------------------------------------*/
-    jQuery(document).on('keydown', "[role='textbox']", function (e){
-        if(e.keyCode == 13){
+    if(window.location.host == 'talkgadget.google.com'){
 
-            var conversation  = findConversation(jQuery(this));
-            var receiver      = findReceiver(conversation);
-            var receiverIndex = isWhiteListed(receiver);
+        /*------------------------------------------------------------------------------------------------------*/
+        /* When the "Enter" key is pressed, if the user is whitelisted...                                       */
+        /* Instead of sending the message we encrypt it...                                                      */
+        /* Then we submit it encrypted surrounded by the two matchers.                                          */
+        /*------------------------------------------------------------------------------------------------------*/
+        jQuery(document).on('keydown', "[role='textbox']", function (e){
+            if( e.keyCode == 13 ){
 
-            if(receiverIndex < 0 ){ return;}
+                var conversation  = findConversation(jQuery(this));
+                var receiver      = findReceiver(conversation);
+                var receiverIndex = chat.isWhiteListed(receiver);
 
-            var receiverPassphrase = whiteList[receiverIndex].passphrase;
-            var clearText          = jQuery(this).text();
-            var encryptedText      = GibberishAES.enc(clearText, receiverPassphrase).replace("\n", "");
-    		
-            jQuery(this).text(matcherStart + encryptedText + matcherStop);
-        }  
-    });
+                if(receiverIndex < 0 ){ return;}
 
-    /*------------------------------------------------------------------------------------------------------*/
-    /* We refresh the chat box every x miliseconds...                                                       */
-    /* In order to decrypt the encrypted messages (received or sent)                                        */
-    /*------------------------------------------------------------------------------------------------------*/
-    setInterval(function(){
-        updateConversationsContent();
-    },refresh);
+                var receiverPassphrase = whiteList[receiverIndex].passphrase;
+                var clearText          = jQuery(this).text();
+                var encryptedText      = GibberishAES.enc(clearText, receiverPassphrase).replace("\n", "");
+                
+                jQuery(this).text(matcherStart + encryptedText + matcherStop);
+            }  
+        });
 
+        /*------------------------------------------------------------------------------------------------------*/
+        /* We refresh the chat box every x miliseconds...                                                       */
+        /* In order to decrypt the encrypted messages (received or sent)                                        */
+        /*------------------------------------------------------------------------------------------------------*/
+        setInterval(function(){
+            chat.updateConversationsContent();
+        },refresh);
+    }
+
+    /*-----    HISTORY EVENTS      -------------------------------------------------------------------------*/
+
+    /* gmail : history */
+    if(window.location.host == 'mail.google.com'){
+
+        /*------------------------------------------------------------------------------------------------------*/
+        /* When viewing the chat history the URL changes to #chats/XXXXX                                        */
+        /* We check is the viewed history belongs to whitelisted user                                           */
+        /* If so we add a "Decrypt" button                                                                      */
+        /*------------------------------------------------------------------------------------------------------*/
+        jQuery(window).on('hashchange', function() {
+            if ( window.location.hash.substring(0, 7) == "#chats/" ) {
+                jQuery.each(whiteList, function(index, value){
+                    if( history.testHistoryUser(value.user) ){
+                        history.createDecryptButton('h1.ha', index);
+                    }
+                });
+            }
+        });
+    }
 
     /*-----    CHAT FUNCTIONS        -----------------------------------------------------------------------*/
+    var chat = {
 
-    /*------------------------------------------------------------------------------------------------------*/
-    /* similar to indexOf or inArray                                                                        */
-    /* returns the index of the user @s or -1 if no user found                                              */
-    /*------------------------------------------------------------------------------------------------------*/
-    function isWhiteListed(s){
-        var r = -1;
-        jQuery.each(whiteList, function(index, value){
-            if(s == value.user){
-                r = index;
-                return false; //break the loop
-            }
-        });
-        return r;
-    }
+        /*------------------------------------------------------------------------------------------------------*/
+        /* Decypt all whitelisted conversations messages                                                        */
+        /*------------------------------------------------------------------------------------------------------*/
+        updateConversationsContent : function(){
+            var self = this;
+            findAllConversations().each(function(){/*each conversation*/
+                var receiver      = findReceiver(jQuery(this));
+                var receiverIndex = self.isWhiteListed(receiver);
 
-    /*------------------------------------------------------------------------------------------------------*/
-    /* Decypt all whitelisted conversations messages                                                        */
-    /*------------------------------------------------------------------------------------------------------*/
-    function updateConversationsContent(){
-        findAllConversations().each(function(){/*each conversation*/
-            var receiver      = findReceiver(jQuery(this));
-            var receiverIndex = isWhiteListed(receiver);
+                if( receiverIndex < 0 ){ return;}
 
-            if(receiverIndex < 0 ){ return;}
-            findAllMessages(jQuery(this)).each(function(){ /*each message*/
-                decrypt(whiteList[receiverIndex].passphrase, this);
+                findAllMessages(jQuery(this)).each(function(){ /*each message*/
+                    core.decrypt(whiteList[receiverIndex].passphrase, this);
+                });
+                
             });
-            
-        });
+        },
+
+        /*------------------------------------------------------------------------------------------------------*/
+        /* similar to indexOf or inArray                                                                        */
+        /* returns the index of the user @s or -1 if no user found                                              */
+        /*------------------------------------------------------------------------------------------------------*/
+        isWhiteListed : function(s) {
+            var r = -1;
+            jQuery.each(whiteList, function(index, value){
+                if( s == value.user ){
+                    r = index;
+                    return false; //break the loop
+                }
+            });
+            return r;
+        }
     }
 
-    /*------------------------------------------------------------------------------------------------------*/
-    /* uses the two matchers to detect encrypted messages in @str                                           */
-    /* loops trought result, remove the matcherStart, stores and returns the clean encrypted messages       */
-    /*------------------------------------------------------------------------------------------------------*/
-    function getMatches(str){
-        var matcher = new RegExp(matcherStart + "([\\s\\S]*?)(?=" + matcherStop + ")", "g");
-        var result  = str.match(matcher);
-        var r       = [];
+    /*-----    HISTORY FUNCTIONS        -------------------------------------------------------------------*/
+    var history = {
 
-        if(result){
-            for (var i = 0; i < result.length; i++) {
-                if (result[i].length > 0) {
-                   r.push(result[i].substring(1, result[i].length));
+        /*------------------------------------------------------------------------------------------------------*/
+        /* Tries to find a whitelisted user name in the <h1> tag of the chat history page                       */
+        /*------------------------------------------------------------------------------------------------------*/
+        testHistoryUser : function(user){
+            var str = jQuery('h1.ha').text();
+            var matcher = new RegExp("\\b" + user + "\\b", "g");
+            if( str.match(matcher) ){
+                return true;
+            }
+        },
+
+        /*------------------------------------------------------------------------------------------------------*/
+        /* Creates a nice google blue button in @parent                                                         */
+        /* Bind a function (decryptHistory()) to click, passing whitelisted user @index as param                */
+        /*------------------------------------------------------------------------------------------------------*/
+        createDecryptButton : function(parent, index){
+            jQuery('<span/>',{'class' : 'T-I J-J5-Ji aOA T-I-atl'})
+            .html('Decrypt')
+            .appendTo(parent)
+            .on('click', index, this.decryptHistory)
+            .css({'position' : 'absolute' , 'top' : '-4px'});
+        },
+
+        /*------------------------------------------------------------------------------------------------------*/
+        /* loop trought all history messages and call the decrypt function                                      */
+        /* @event.data contain the whitelisted user index (see createDecryptButton() for binding)               */
+        /*------------------------------------------------------------------------------------------------------*/
+        decryptHistory : function(event){
+            var receiverIndex = event.data;
+            findAllHistoryMessages().each(function(){
+                core.decrypt(whiteList[receiverIndex].passphrase, this);
+            });
+        }      
+    }
+
+    /*-----    CORE FUNCTIONS        ----------------------------------------------------------------------*/
+    var core = {
+
+        /*------------------------------------------------------------------------------------------------------*/
+        /* uses the two matchers to detect encrypted messages in @str                                           */
+        /* loops trought result, remove the matcherStart, stores and returns the clean encrypted messages       */
+        /*------------------------------------------------------------------------------------------------------*/
+        getMatches : function(str){
+            var matcher = new RegExp(matcherStart + "([\\s\\S]*?)(?=" + matcherStop + ")", "g");
+            var result = str.match(matcher);
+            var r = [];
+
+            if( result ){
+                for (var i = 0; i < result.length; i++) {
+                    if( result[i].length > 0 ) {
+                       r.push(result[i].substring(1, result[i].length));
+                    }
                 }
             }
+            return r;
+        },
+
+        /*------------------------------------------------------------------------------------------------------*/
+        /* Get encrypted strings with getMatches() in @elem                                                     */
+        /* Then for each one decrypts it with @receiverPassphrase                                               */
+        /* linkify it and adds it to @elem                                                                      */
+        /*------------------------------------------------------------------------------------------------------*/
+        decrypt : function (receiverPassphrase, elem){
+            var self = this;
+            var $message = jQuery(elem);
+            var clearStr = $message.text();
+            var encryptedStr = this.getMatches(clearStr);
+            
+            jQuery.each(encryptedStr, function(k,v){ /*each encrypted string in a message*/
+                var textDecrypt = GibberishAES.dec(v, receiverPassphrase).replace("\n", "");
+                var textClear = clearStr.replace(matcherStart + v + matcherStop, textDecrypt);
+                var textParsed = self.linkify(textClear);
+
+                $message.html(textParsed);
+            });
+        },
+
+        /*------------------------------------------------------------------------------------------------------*/
+        /* Detects links in @text and replaces it with html markup for links                                    */
+        /*------------------------------------------------------------------------------------------------------*/
+        linkify : function(text) {
+            text = text.replace(/(https?:\/\/\S+)/gi, function (s) {
+                return '<a href="' + s + '">' + s + '</a>';
+            });
+            return text;
         }
-        return r;
-    }
-
-    /*------------------------------------------------------------------------------------------------------*/
-    /* Get encrypted strings with getMatches() in @elem                                                     */
-    /* Then for each one decrypts it with @receiverPassphrase                                               */
-    /* linkify it and adds it to @elem                                                                      */
-    /*------------------------------------------------------------------------------------------------------*/
-    function decrypt(receiverPassphrase, elem){
-        var $message     = jQuery(elem);
-        var clearStr     = $message.text();
-        var encryptedStr = getMatches(clearStr);
-        
-        jQuery.each(encryptedStr, function(k,v){ /*each encrypted string in a message*/
-            var textDecrypt = GibberishAES.dec(v, receiverPassphrase).replace("\n", "");
-            var textClear   = clearStr.replace(matcherStart + v + matcherStop, textDecrypt);
-            var textParsed  = linkify(textClear);
-
-            $message.html(textParsed);
-        });   
-    }
-
-
-    /*-----    MESSAGES PARSING        ---------------------------------------------------------------------*/
-
-    /*------------------------------------------------------------------------------------------------------*/
-    /* Detects links in @text and replaces it with html markup for links                                    */
-    /*------------------------------------------------------------------------------------------------------*/
-    function linkify(text) {
-        // todo : add the different gtalk possibilities : bold, underline, italic...
-        text = text.replace(/(https?:\/\/\S+)/gi, function (s) {
-            return '<a href="' + s + '">' + s + '</a>';
-        });
-        return text;
     }
 
     /*-----    DOM SELECTIONS       ------------------------------------------------------------------------*/
-
     function findReceiver($conversation){
         return $conversation.find('.RE.OxDpJ').text();
     }
@@ -203,6 +271,10 @@ jQuery(window).load(function(){
 
     function findAllConversations(){
         return jQuery(".DH.hh.WQ.X0:visible");
+    }
+
+    function findAllHistoryMessages(){
+        return jQuery("[data-type='m']").find('td.aOV');
     }
 });
 
