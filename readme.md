@@ -3,7 +3,9 @@ Say hello to the NSA
 
 gAES / hangoutAES
 ================================
-
+Your chats will look like this : 
+`U2FsdGVkX1/4B5+XAraGEF3rsf/WpYbyCsB+IKylJXc=` to the eyes off all, (except your contact)  
+  
 gAES is a (greasemonkey) user script that encrypts/decrypts (AES) your google chats (gTalk or hangout) with one or more contacts    
 - Install `gAES.user.js` to encrypt/decrypt your conversations with gTalk  
 - Install `hangoutAES.user.js` to encrypt/decrypt your conversations with google Hangouts (g+ and gmail if you enable it...)  
