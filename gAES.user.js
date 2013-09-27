@@ -262,6 +262,6 @@ jQuery(window).load(function(){
     }
 
     function findAllHistoryMessages(){
-        return jQuery("[data-type='m']").find('td.aOV');
+        return jQuery("[data-type='m']");
     }
 });
