@@ -12,7 +12,7 @@ gAES is a (greasemonkey) user script that encrypts/decrypts (AES) your google ch
 
 ---
 
-##Installation
+## Installation
 
 
 *Both you and the contact you want to chat with have to install gAES/hangoutAES.*  
@@ -23,7 +23,7 @@ After installing GreaseMonkey,
 GreaseMonkey will suggest you to install the script, do it.  
 
 
-##Configuration
+## Configuration
 
 
 *Both you and the contact you want to chat with have to configure gAES/hangoutAES.*  
@@ -51,7 +51,7 @@ var whiteList = [{
 Save, refresh the gmail tab, et voilà !
 
 
-##Usage
+## Usage
 
 
 gAES/hangoutAES encrypts your message on the fly, then decrypts all messages in the chatbox, every seconds (you can configure it).  
