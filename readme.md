@@ -12,6 +12,11 @@ gAES is a (greasemonkey) user script that encrypts/decrypts (AES) your google ch
 
 ---
 
+## Disclaimer
+
+Please Note that this is a research project. It's certainly not the best tool to have secure, encrypted, communcations.
+Have a look at OpenPGP https://www.openpgp.org/software/
+
 ## Installation
 
 
